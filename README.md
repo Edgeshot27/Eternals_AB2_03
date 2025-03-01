@@ -10,7 +10,7 @@ Problem: Healthcare professionals face challenges accessing real-time, relevant 
 Traditional search methods often fail to capture the semantic nuances of medical queries.This leads to potential inaccuracies and inefficiencies in clinical decisions.
 
 ## Project Overview 
-AIsculapius is a RAG-based Clinical Decision Support System (CDSS) designed to provide accurate, context-aware, and summarized answers to medical queries. It leverages the power of Qdrant (vector database), BioBERT-based query expansion, and AI-driven summarization using Grok LLM to deliver a comprehensive medical information resource.User queries trigger retrieval of relevant information, patient data integration, and AI-powered summarization. A chatbot interface delivers concise, evidence-based recommendations, with options for source document access and human oversight. Continuous evaluation and data updates ensure accuracy and relevance.
+AIsculapius is a RAG-based Clinical Decision Support System (CDSS) designed to provide accurate, context-aware, and summarized answers to medical queries. It leverages the power of Qdrant (vector database),Hybrid (BM25 + Vector) Search, BioBERT-based query expansion, and AI-driven summarization using Grok LLM to deliver a comprehensive medical information resource.User queries trigger retrieval of relevant information, patient data integration, and AI-powered summarization. A chatbot interface delivers concise, evidence-based recommendations, with options for source document access and human oversight. Continuous evaluation and vector database updates ensure accuracy and relevance.
 
 ## ROUND 1 WORK
 ![image](https://github.com/user-attachments/assets/5f070a3e-2a30-4462-9fb0-cb435579a3f8)
