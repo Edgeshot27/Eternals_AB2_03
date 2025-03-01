@@ -1,11 +1,12 @@
-import qdrant_client
+import os
+import json
+import logging
 import torch
 from transformers import AutoTokenizer, AutoModel
 from rank_bm25 import BM25Okapi
-import json
-import logging
+import qdrant_client
+from groq import Groq
 
-# Enable logging
 logging.basicConfig(level=logging.INFO)
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -38,11 +39,13 @@ def load_bm25_data():
 
 bm25, documents, titles = load_bm25_data()
 
+
 def get_query_embedding(query):
     inputs = tokenizer(query, return_tensors="pt", padding=True, truncation=True).to(device)
     with torch.no_grad():
         outputs = model(**inputs)
     return outputs.last_hidden_state.mean(dim=1).squeeze().tolist()
+
 
 def retrieve_dense(query, top_k=5):
     query_vector = get_query_embedding(query)
@@ -50,10 +53,15 @@ def retrieve_dense(query, top_k=5):
         collection_name=collection_name, query_vector=query_vector, limit=top_k
     )
     results = [
-        {"title": hit.payload.get("title", "Unknown"), "abstract": hit.payload.get("abstract", ""), "score": hit.score}
+        {
+            "title": hit.payload.get("title", "Unknown"),
+            "abstract": hit.payload.get("abstract", ""),
+            "score": hit.score
+        }
         for hit in search_results
     ]
     return results
+
 
 def retrieve_bm25(query, top_k=5):
     if not bm25:
@@ -63,6 +71,7 @@ def retrieve_bm25(query, top_k=5):
     scores = bm25.get_scores(query_tokens)
     top_indices = sorted(range(len(scores)), key=lambda i: scores[i], reverse=True)[:top_k]
     return [{"title": titles[i], "abstract": documents[i], "score": scores[i]} for i in top_indices]
+
 
 def reciprocal_rank_fusion(dense_results, bm25_results, k=60):
     combined_scores = {}
@@ -75,34 +84,57 @@ def reciprocal_rank_fusion(dense_results, bm25_results, k=60):
     update_score(bm25_results)
     return sorted(combined_scores.items(), key=lambda x: x[1], reverse=True)
 
+
 def retrieve_hybrid(query, top_k=5):
     dense_results = retrieve_dense(query, top_k=top_k)
     bm25_results = retrieve_bm25(query, top_k=top_k)
     return reciprocal_rank_fusion(dense_results, bm25_results) if bm25_results else dense_results
 
-# Save retrieved Qdrant data to JSON
-def save_data(query, top_k=5):
-    qdrant_data = retrieve_dense(query, top_k)
+
+groq_client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
+
+
+conversation_history = [
+    {"role": "system", "content": "You are an AI expert in medical document retrieval and research."}
+]
+
+
+def generate_ai_response(query):
     
-    all_data = {
-        "qdrant": qdrant_data  
-    }
+    retrieved_docs = retrieve_hybrid(query, top_k=5)
+    
+    if not retrieved_docs:
+        return "No relevant documents found."
 
-    with open("medical_data.json", "w", encoding="utf-8") as f:
-        json.dump(all_data, f, indent=4)
-
-    print(" Data saved to medical_data.json")
-
-if __name__ == "__main__":
-    query = input("Enter your search query: ")
+   
+    retrieved_texts = "\n\n".join([f"Title: {doc[0]}\nAbstract: {doc[1]}" for doc in retrieved_docs])
     
     
-    save_data(query)
+    prompt = f"""You are an AI that provides detailed responses in points based on medical research documents.
+    Given the following research abstracts, answer the user's question. answer in points.Have a heading for each point and then explain the abstract part in subpoints
 
-    hybrid_results = retrieve_hybrid(query)
+    User's Query: {query}
 
-    print("\n Hybrid Search Results:")
-    for idx, (title, score) in enumerate(hybrid_results[:5], 1):
-        print(f"{idx}. {title} (Score: {score:.4f})\n")
+    Relevant Research:
+    {retrieved_texts}
 
+    Now, provide a detailed response using the information above in point.give points number wise for main headed and subpoints in bullet points.
+    """
+    
+    
+    conversation_history.append({"role": "user", "content": prompt})
+
+    try:
+        
+        chat_completion = groq_client.chat.completions.create(
+            messages=conversation_history,
+            model="llama-3.3-70b-versatile"
+        )
+
+        reply = chat_completion.choices[0].message.content
+        conversation_history.append({"role": "assistant", "content": reply})
+        return reply
+
+    except Exception as e:
+        return f"Error generating response: {e}"
 
