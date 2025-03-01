@@ -4,17 +4,15 @@
 
 **Named after Asclepius, the Greek god of medicine, with an AI twist.**
 
-## ROUND 1 WORK
-![image](https://github.com/user-attachments/assets/4f15e5f4-5088-42b7-a7d1-b933f6a011b6)
-
-
 ## Project Overview 
-AIsculapius is a RAG-based Clinical Decision Support System (CDSS) designed to provide accurate, context-aware, and summarized answers to medical queries. It leverages the power of Qdrant (vector database), BioBERT-based query expansion, and AI-driven summarization using Grok LLM to deliver a comprehensive medical information resource.The support system further utilizes its resources for indvidual s
-
+AIsculapius is a RAG-based Clinical Decision Support System (CDSS) designed to provide accurate, context-aware, and summarized answers to medical queries. It leverages the power of Qdrant (vector database), BioBERT-based query expansion, and AI-driven summarization using Grok LLM to deliver a comprehensive medical information resource.The support system further utilizes its resources for Personalized Patient Insights: Context-aware response generation integrating real-time patient vitals and historical data.
 
 ## Problem Statement
 
 Navigating the vast landscape of medical literature is challenging for both healthcare professionals and patients. Traditional search methods often fail to capture the semantic nuances of medical queries. AIsculapius addresses this by combining keyword-based search with semantic vector search and AI summarization.
+
+## ROUND 1 WORK
+![image](https://github.com/user-attachments/assets/4f15e5f4-5088-42b7-a7d1-b933f6a011b6)
 
 ## Solution
 
@@ -39,6 +37,9 @@ Our solution provides a robust pipeline for clinical decion support system:
 * **Comprehensive Data Sources:** Integrates data from reputable medical literature repositories.
 * **Human-in-the-Loop:** Allows for review and validation of results. Further the query expansion allows the human to tune the query to his/her liking.
 * **Evaluation Metrics:** Tracks performance using Precision@k, Recall@k, and MRR.
+
+![image](https://github.com/user-attachments/assets/5f070a3e-2a30-4462-9fb0-cb435579a3f8)
+
 
 ## Architecture
 
