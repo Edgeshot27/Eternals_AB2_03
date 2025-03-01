@@ -44,8 +44,7 @@ Our solution provides a robust pipeline for clinical decion support system:
 
 
 ## Architecture
-
-
+![diagram-export-3-2-2025-1_47_42-AM](https://github.com/user-attachments/assets/5097d798-cb14-4695-8339-6b5f371fc4b9)
 
 
 ROUND 2 WORK:
