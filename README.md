@@ -19,7 +19,7 @@ Navigating the vast landscape of medical literature is challenging for both heal
 
 Our solution provides a robust pipeline for medical literature retrieval:
 
-1.  **Data Ingestion:** Aggregates data from PubMed, WHO, FDA, ArXiv, and BioRxiv.
+1.  **Data Ingestion:** Aggregates data from PubMed, WHO, FDA, ArXiv, TEXTBOOKS: 18 widely used medical textbooks, which are important references for students taking the United States Medical Licensing Examination (USLME), 
 2.  **Query Processing:** Expands user queries using BioBERT and EHR-derived medical vocabulary, then performs hybrid retrieval.
 3.  **AI Summarization:** Utilizes Grok LLM for concise summaries and BioBERT for Named Entity Recognition (NER).
 4.  **Output Representation:** Delivers results via a chatbot interface with summaries, source links, and structured medical entities.
