@@ -4,12 +4,12 @@
 
 **Named after Asclepius, the Greek god of medicine, with an AI twist.**
 
+## Problem Statement: AB2_03
+Problem: Healthcare professionals face challenges accessing real-time, relevant medical information for decision-making due to fragmented data and evolving research. Existing systems struggle with patient-specific insights and cognitive overload from vast outdated literature. 
+Traditional search methods often fail to capture the semantic nuances of medical queries.This leads to potential inaccuracies and inefficiencies in clinical decisions.
+
 ## Project Overview 
-AIsculapius is a RAG-based Clinical Decision Support System (CDSS) designed to provide accurate, context-aware, and summarized answers to medical queries. It leverages the power of Qdrant (vector database), BioBERT-based query expansion, and AI-driven summarization using Grok LLM to deliver a comprehensive medical information resource.The support system further utilizes its resources for Personalized Patient Insights: Context-aware response generation integrating real-time patient vitals and historical data.
-
-## Problem Statement
-
-Navigating the vast landscape of medical literature is challenging for both healthcare professionals and patients. Traditional search methods often fail to capture the semantic nuances of medical queries. AIsculapius addresses this by combining keyword-based search with semantic vector search and AI summarization.
+AIsculapius is a RAG-based Clinical Decision Support System (CDSS) designed to provide accurate, context-aware, and summarized answers to medical queries. It leverages the power of Qdrant (vector database), BioBERT-based query expansion, and AI-driven summarization using Grok LLM to deliver a comprehensive medical information resource.User queries trigger retrieval of relevant information, patient data integration, and AI-powered summarization. A chatbot interface delivers concise, evidence-based recommendations, with options for source document access and human oversight. Continuous evaluation and data updates ensure accuracy and relevance.
 
 ## ROUND 1 WORK
 ![image](https://github.com/user-attachments/assets/4f15e5f4-5088-42b7-a7d1-b933f6a011b6)
