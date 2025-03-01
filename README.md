@@ -1,16 +1,14 @@
 
 
-# AIsculapius: Hybrid Medical Literature Retrieval System
-
-[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![GitHub Issues](https://img.shields.io/github/issues/YOUR_USERNAME/AIsculapius)](https://github.com/YOUR_USERNAME/AIsculapius/issues)
-[![GitHub Stars](https://img.shields.io/github/stars/YOUR_USERNAME/AIsculapius)](https://github.com/YOUR_USERNAME/AIsculapius/stargazers)
+# AIsculapius: RAG-based Clinical Decision Support System (CDSS)
 
 **Named after Asclepius, the Greek god of medicine, with an AI twist.**
+ROUND 1 WORK
+![image](https://github.com/user-attachments/assets/4f15e5f4-5088-42b7-a7d1-b933f6a011b6)
+
 
 ## Project Overview
-
-AIsculapius is a hybrid medical literature retrieval system designed to provide accurate, context-aware, and summarized answers to medical queries. It leverages the power of Qdrant (vector database), BioBERT-based query expansion, and AI-driven summarization using Grok LLM to deliver a comprehensive medical information resource.
+AIsculapius is a RAG-based Clinical Decision Support System (CDSS) designed to provide accurate, context-aware, and summarized answers to medical queries. It leverages the power of Qdrant (vector database), BioBERT-based query expansion, and AI-driven summarization using Grok LLM to deliver a comprehensive medical information resource.
 
 ## Problem Statement
 
@@ -39,18 +37,10 @@ Our solution provides a robust pipeline for medical literature retrieval:
 
 ## Architecture
 
-```mermaid
-graph TD
-    A[Medical Literature Sources (PubMed, WHO, etc.)] --> B(Data Ingestion);
-    B --> C{Qdrant & Elasticsearch};
-    D[User Query] --> E(Query Processing & Expansion);
-    E --> C;
-    C --> F(Hybrid Retrieval);
-    F --> G(AI Summarization & NER);
-    G --> H(Grok LLM Summarization);
-    G --> I(BioBERT NER);
-    H --> J(Output Representation - Chatbot);
-    I --> J;
-    F --> J;
-    J --> K(Evaluation & Refinement);
-    K --> E;
+
+
+
+ROUND 2 WORK:
+ROUND 2 Enhancements
+![image](https://github.com/user-attachments/assets/56dadfbf-056e-4e72-aede-a64ca5ef1f75)
+
