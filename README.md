@@ -24,8 +24,9 @@ Our solution provides a robust pipeline for clinical decion support system:
 ![image](https://github.com/user-attachments/assets/bf17c7a5-eb40-4af8-83f8-cebf5606c124)
 
 2.  **Query Processing:** Expands user queries using BioBERT and EHR-derived medical vocabulary, then performs hybrid retrieval.
-3.  **AI Summarization:** Utilizes Grok LLM for concise summaries and BioBERT for Named Entity Recognition (NER).
-![image](https://github.com/user-attachments/assets/3b58fb24-7f0b-4732-90ad-373bf5064570)
+3.  **AI Summarization:** Utilizes Groq L for concise summaries and BioBERT for Named Entity Recognition (NER).
+![image](https://github.com/user-attachments/assets/9b2db905-79db-4408-a4e2-766fa5e6b276)
+
 
 4.  **Output Representation:** Delivers results via a chatbot interface with summaries, source links, and structured medical entities.
 5.  **Evaluation & Refinement:** Continuously improves performance through evaluation metrics and user feedback. The Model undergoes periodic updates to update its Vector Database with New Research , Electronic Health Records , guidelines and Textbooks.
