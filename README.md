@@ -11,17 +11,6 @@ ROUND 1 WORK
 ## Project Overview 
 AIsculapius is a RAG-based Clinical Decision Support System (CDSS) designed to provide accurate, context-aware, and summarized answers to medical queries. It leverages the power of Qdrant (vector database), BioBERT-based query expansion, and AI-driven summarization using Grok LLM to deliver a comprehensive medical information resource.The support system further utilizes its resources for indvidual s
 
-📊 Table of All Data Sources Integrated into Our RAG Pipeline
-Data Source	Type	API / Method Used	Fields Stored in Qdrant	Category
-PubMed	Research Papers	Entrez API	title, abstract, source	Research
-ArXiv	Research Papers	ArXiv API	title, abstract, source	Research
-bioRxiv	Preprint Papers	bioRxiv API	title, abstract, source	Research
-FDA (Drugs & Treatments)	Medicines & Treatments	FDA API	title, abstract, source	Medicine
-RxNorm	Drug Information	RxNorm API	title, abstract, source	Medicine
-WHO Guidelines	Medical Guidelines	WHO Scraper	title, abstract, source	Research
-MIMIC-IV (MIT EHR Database)	EHR Records	PostgreSQL Query	diagnosis, medications, clinical notes	EHR
-Hugging Face (MedRAG Textbooks)	Medical Textbooks	datasets.load_dataset()	title, abstract, source	Educational
-
 
 ## Problem Statement
 
@@ -32,6 +21,9 @@ Navigating the vast landscape of medical literature is challenging for both heal
 Our solution provides a robust pipeline for clinical decion support system:
 
 1.  **Data Ingestion:** Aggregates data from PubMed, WHO, FDA, ArXiv, TEXTBOOKS: 18 widely used medical textbooks, which are important references for students taking the United States Medical Licensing Examination (USLME), 
+
+![image](https://github.com/user-attachments/assets/bf17c7a5-eb40-4af8-83f8-cebf5606c124)
+
 2.  **Query Processing:** Expands user queries using BioBERT and EHR-derived medical vocabulary, then performs hybrid retrieval.
 3.  **AI Summarization:** Utilizes Grok LLM for concise summaries and BioBERT for Named Entity Recognition (NER).
 4.  **Output Representation:** Delivers results via a chatbot interface with summaries, source links, and structured medical entities.
