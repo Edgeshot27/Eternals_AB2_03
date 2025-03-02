@@ -23,7 +23,7 @@ Our solution provides a robust pipeline for clinical decion support system:
 
 ![image](https://github.com/user-attachments/assets/bf17c7a5-eb40-4af8-83f8-cebf5606c124) 
 
-## Current Vector DB Status: approx 30,000 Data Points : Retrieved from 8 different Sources
+## Current Vector DB Status: approx 30,000 Data Points : Retrieved from 8 different Sources 1,26,000 Book Records , 3000 Research Papers, Guidelines from PubMed,Arxiv,WHO etc.
 ![image](https://github.com/user-attachments/assets/8d423b76-68bf-4421-bebd-fc4325e741cf)
 
 
