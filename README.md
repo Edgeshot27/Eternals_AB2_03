@@ -21,7 +21,11 @@ Our solution provides a robust pipeline for clinical decion support system:
 
 1.  **Data Ingestion:** Aggregates data from PubMed, WHO, FDA, ArXiv, TEXTBOOKS: 18 widely used medical textbooks, which are important references for students taking the United States Medical Licensing Examination (USLME), 
 
-![image](https://github.com/user-attachments/assets/bf17c7a5-eb40-4af8-83f8-cebf5606c124)
+![image](https://github.com/user-attachments/assets/bf17c7a5-eb40-4af8-83f8-cebf5606c124) 
+
+## Current Vector DB Status: approx 30,000 Data Points : Retrieved from 8 different Sources
+![image](https://github.com/user-attachments/assets/8d423b76-68bf-4421-bebd-fc4325e741cf)
+
 
 2.  **Query Processing:** Expands user queries using BioBERT and EHR-derived medical vocabulary, then performs hybrid retrieval.
 3.  **AI Summarization:** Utilizes Groq LPU for concise summaries and BioBERT for Named Entity Recognition (NER).
