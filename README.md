@@ -27,6 +27,7 @@ Our solution provides a robust pipeline for clinical decion support system:
 ![image](https://github.com/user-attachments/assets/8d423b76-68bf-4421-bebd-fc4325e741cf)
 
 
+
 2.  **Query Processing:** Expands user queries using BioBERT and EHR-derived medical vocabulary, then performs hybrid retrieval.
 3.  **AI Summarization:** Utilizes Groq LPU for concise summaries and BioBERT for Named Entity Recognition (NER).
 ![image](https://github.com/user-attachments/assets/9b2db905-79db-4408-a4e2-766fa5e6b276)
