@@ -34,6 +34,8 @@ Our solution provides a robust pipeline for clinical decion support system:
 
 
 4.  **Output Representation:** Delivers results via a chatbot interface with summaries, source links, and structured medical entities.
+![WhatsApp Image 2025-03-02 at 09 26 23_731f4fef](https://github.com/user-attachments/assets/6ac10acb-91e9-4f1f-b904-29071f118f4f)
+
 5.  **Evaluation & Refinement:** Continuously improves performance through evaluation metrics and user feedback. The Model undergoes periodic updates to update its Vector Database with New Research , Electronic Health Records , guidelines and Textbooks.
 
 ## Key Features
