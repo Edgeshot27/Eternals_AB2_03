@@ -60,6 +60,6 @@ Our solution provides a robust pipeline for clinical decion support system:
 ROUND 2 WORK:
 ![image](https://github.com/user-attachments/assets/43141be9-23d0-4047-be64-282e15662a8a)
 
-![image](https://github.com/user-attachments/assets/703f6416-5cb5-418a-ae9b-ac57b4e436f1)
+![image](https://github.com/user-attachments/assets/28b8e4c1-8e42-4787-8d38-5ef73f492fda)
 
 
