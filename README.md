@@ -49,7 +49,7 @@ Our solution provides a robust pipeline for clinical decion support system:
 * **Chatbot Interface:** Facilitates user interaction and information delivery.
 * **Comprehensive Data Sources:** Integrates data from reputable medical literature repositories.
 * **Human-in-the-Loop:** Allows for review and validation of results. Further the query expansion allows the human to tune the query to his/her liking.
-* **Evaluation Metrics:** Tracks performance using Precision@k, Recall@k, and MRR.
+* **Evaluation Metrics:** Tracks performance using Reciprocal Rank Fusion (RRF)
 
 
 
