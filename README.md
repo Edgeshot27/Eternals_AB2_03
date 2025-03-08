@@ -23,7 +23,7 @@ Our solution provides a robust pipeline for clinical decion support system:
 
 ![image](https://github.com/user-attachments/assets/bf17c7a5-eb40-4af8-83f8-cebf5606c124) 
 
-## Current Vector DB Status: approx 30,000 Data Points : Retrieved from 8 different Sources
+## Current Vector DB Status: approx 30,000 Data Points : Retrieved from 8 different Sources 1,26,000 Book Records , 3000 Research Papers, Guidelines from PubMed,Arxiv,WHO etc.
 ![image](https://github.com/user-attachments/assets/8d423b76-68bf-4421-bebd-fc4325e741cf)
 
 
@@ -35,8 +35,10 @@ Our solution provides a robust pipeline for clinical decion support system:
 
 4.  **Output Representation:** Delivers results via a chatbot interface with summaries, source links, and structured medical entities.
 ![WhatsApp Image 2025-03-02 at 09 26 23_731f4fef](https://github.com/user-attachments/assets/6ac10acb-91e9-4f1f-b904-29071f118f4f)
+![WhatsApp Image 2025-03-02 at 11 35 22_bf37ecc9](https://github.com/user-attachments/assets/e47f09f8-88a3-4fcd-bbf5-62439f0e462f)
+![WhatsApp Image 2025-03-02 at 11 35 23_15535403](https://github.com/user-attachments/assets/01724c5e-d130-495a-9060-5989bbdb3c6e)
 
-5.  **Evaluation & Refinement:** Continuously improves performance through evaluation metrics and user feedback. The Model undergoes periodic updates to update its Vector Database with New Research , Electronic Health Records , guidelines and Textbooks.
+6.  **Evaluation & Refinement:** Continuously improves performance through evaluation metrics and user feedback. The Model undergoes periodic updates to update its Vector Database with New Research , Electronic Health Records , guidelines and Textbooks.
 
 ## Key Features
 
@@ -47,7 +49,7 @@ Our solution provides a robust pipeline for clinical decion support system:
 * **Chatbot Interface:** Facilitates user interaction and information delivery.
 * **Comprehensive Data Sources:** Integrates data from reputable medical literature repositories.
 * **Human-in-the-Loop:** Allows for review and validation of results. Further the query expansion allows the human to tune the query to his/her liking.
-* **Evaluation Metrics:** Tracks performance using Precision@k, Recall@k, and MRR.
+* **Evaluation Metrics:** Tracks performance using Reciprocal Rank Fusion (RRF)
 
 
 
@@ -58,6 +60,6 @@ Our solution provides a robust pipeline for clinical decion support system:
 ROUND 2 WORK:
 ![image](https://github.com/user-attachments/assets/43141be9-23d0-4047-be64-282e15662a8a)
 
-![image](https://github.com/user-attachments/assets/703f6416-5cb5-418a-ae9b-ac57b4e436f1)
+![image](https://github.com/user-attachments/assets/28b8e4c1-8e42-4787-8d38-5ef73f492fda)
 
 
