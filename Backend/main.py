@@ -89,6 +89,8 @@ class PatientCreate(BaseModel):
     medications: str
     reports: str
     remarks: str
+    latest_risk_factor:str
+    
 
 class Token(BaseModel):
     access_token: str
@@ -233,7 +235,9 @@ async def query_medical_patient_ai(question: str, patient_id: str):
             "allergies": patient["allergies"],
             "personalHistory": patient["personalHistory"],
             "familyHistory": patient["familyHistory"],
-            "remarks": patient["remarks"]
+            "remarks": patient["remarks"],
+            
+            "latest_risk_factor":patient["latest_risk_factor"]
         }
         past_questions = patient.get("therapeutic_optimisation_question", "").split(" || ")
         past_questions = past_questions[-2:] if past_questions else []
@@ -241,21 +245,19 @@ async def query_medical_patient_ai(question: str, patient_id: str):
         response = generate_patient_ai_response(question, patient_info, therapeutic_optimisation_question)
 
         # Generate AI response
-        response,score,risk_factor = generate_patient_ai_response(question, patient_info,therapeutic_optimisation_question)
+        response,risk = generate_patient_ai_response(question, patient_info,therapeutic_optimisation_question)
         chat_entry = {
             "question": question,
             "response": response,
-            "risk_factor": risk_factor,  
-            "confidence_score": score,
+            "latest_risk_factor":risk,
             "timestamp": datetime.utcnow()
         }
         await patients_collection.update_one(
             {"_id": ObjectId(patient_id)},
-            {"$push": {"chat_history": chat_entry}, "$set": {"therapeutic_optimisation_question": therapeutic_optimisation_question, 
-              "latest_risk_factor": risk_factor}}
+            {"$push": {"chat_history": chat_entry}, "$set": {"therapeutic_optimisation_question": therapeutic_optimisation_question,"latest_risk_factor":risk}}
         )
         
-        return {"query": question, "patient_info": patient_info, "response": response,"score":score}
+        return {"query": question, "patient_info": patient_info, "response": response}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

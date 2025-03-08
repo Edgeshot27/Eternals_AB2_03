@@ -13,7 +13,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 client = qdrant_client.QdrantClient(
     url="https://8108fa10-87c0-489a-a138-e5742baa513d.europe-west3-0.gcp.cloud.qdrant.io:6333",
-    api_key="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2Nlc3MiOiJtIn0.ota-qmq7LDu8VAg1XW-RRzgXPngfjoSvuA01b7a-PLo"
+    api_key="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2Nlc3MiOiJtIn0.ota-qmq7LDu8VAg1XW-RRzgXPngfjoSvuA01b7a-PLo"  # Use environment variables for security
 )
 collection_name = "clinic_abstract"
 
@@ -79,62 +79,53 @@ def reciprocal_rank_fusion(dense_results, bm25_results, k=60):
 def retrieve_hybrid(query, top_k=5):
     dense_results = retrieve_dense(query, top_k=top_k)
     bm25_results = retrieve_bm25(query, top_k=top_k)
-    return reciprocal_rank_fusion(dense_results, bm25_results) if bm25_results else dense_results
+    hybrid_results = reciprocal_rank_fusion(dense_results, bm25_results) if bm25_results else dense_results
+    return [{"title": title, "score": score} for title, score in hybrid_results]
 
-groq_client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
+groq_client = Groq(api_key=os.getenv("GROQ_API_KEY"))  # Secure API key handling
 
-conversation_history = [
-    {"role": "system", "content": "You are an AI expert in medical document retrieval and research."}
-]
 def get_qdrant_min_max():
     all_scores = []
-    for doc in client.scroll(collection_name=collection_name, scroll_filter=None, limit=1000):
-        all_scores.append(doc.score)
+    scroll_result = client.scroll(collection_name=collection_name, scroll_filter=None, limit=1000)
+    for point in scroll_result[0]:  # Extract documents from tuple response
+        if "score" in point:  
+            all_scores.append(point["score"])
     
-    return min(all_scores), max(all_scores)
+    return (min(all_scores), max(all_scores)) if all_scores else (0, 1)
 
 min_qdrant, max_qdrant = get_qdrant_min_max()
-
 
 def get_bm25_min_max():
     all_scores = []
     for doc in documents:
         tokens = doc.split()
-        score = bm25.get_scores(tokens)
-        all_scores.extend(score)
+        scores = bm25.get_scores(tokens)
+        all_scores.extend(scores)
     
-    return min(all_scores), max(all_scores)
+    return (min(all_scores), max(all_scores)) if all_scores else (0, 1)
 
 min_bm25, max_bm25 = get_bm25_min_max()
+
 def compute_confidence_score(qdrant_score, bm25_score, alpha=0.7):
-    
-    qdrant_range = max_qdrant - min_qdrant
-    bm25_range = max_bm25 - min_bm25
+    qdrant_range = max_qdrant - min_qdrant or 1
+    bm25_range = max_bm25 - min_bm25 or 1
 
-    
-    qdrant_norm = (qdrant_score - min_qdrant) / qdrant_range if qdrant_range != 0 else 0
-    bm25_norm = (bm25_score - min_bm25) / bm25_range if bm25_range != 0 else 0
+    qdrant_norm = (qdrant_score - min_qdrant) / qdrant_range
+    bm25_norm = (bm25_score - min_bm25) / bm25_range
 
-    
     return alpha * qdrant_norm + (1 - alpha) * bm25_norm
 
 def classify_risk_factor(response_text, query):
-    """
-    Classifies the patient's risk factor based on the LLM-generated response and query.
-    
-    :param response_text: The AI-generated response.
-    :param query: The medical query.
-    :return: Risk category - "Critical", "Medium", or "Minor".
-    """
     critical_keywords = ["life-threatening", "severe", "urgent", "emergency", "high risk", "ICU", "hospitalization"]
     medium_keywords = ["moderate", "monitor closely", "follow-up needed", "potential complications"]
     minor_keywords = ["mild", "low risk", "routine check-up", "no immediate concern"]
 
     response_lower = response_text.lower()
+    query_lower = query.lower()
 
-    if any(word in response_lower for word in critical_keywords) or any(word in query.lower() for word in critical_keywords):
+    if any(word in response_lower for word in critical_keywords) or any(word in query_lower for word in critical_keywords):
         return "Critical"
-    elif any(word in response_lower for word in medium_keywords) or any(word in query.lower() for word in medium_keywords):
+    elif any(word in response_lower for word in medium_keywords) or any(word in query_lower for word in medium_keywords):
         return "Medium"
     else:
         return "Minor"
@@ -142,17 +133,14 @@ def classify_risk_factor(response_text, query):
 def generate_patient_ai_response(query, patient_recent_profile, therapeutic_optimisation_question):
     retrieved_docs = retrieve_hybrid(query, top_k=5)
     if not retrieved_docs:
-        return "No relevant documents found."
+        return {"response": "No relevant documents found."}
 
-    retrieved_texts = "\n\n".join([f"Title: {doc[0]}\nAbstract: {doc[1]}" for doc in retrieved_docs])
-    confidence_scores = []
-    for doc in retrieved_docs:
-        qdrant_score = doc[1]  # Adjust based on your data structure
-        bm25_score = doc[2]  # Adjust based on your data structure
-        confidence = compute_confidence_score(qdrant_score, bm25_score)
-        confidence_scores.append(confidence)
+    retrieved_texts = "\n\n".join([f"Title: {doc['title']}\nAbstract: {doc.get('abstract', 'No abstract')}" for doc in retrieved_docs])
+    confidence_scores = [doc["score"] for doc in retrieved_docs]
     avg_confidence = sum(confidence_scores) / len(confidence_scores) if confidence_scores else 0
-    prompt = f"""## Role: World-Class Primary Care Physician
+
+    prompt = f"""
+## Role: World-Class Primary Care Physician
 
 ## Task: Generate Therapeutic Optimization Tasks for a PCP to review based on the patient's profile, therapeutic optimisation questions, and current best practice guidelines.
 
@@ -184,7 +172,7 @@ A comprehensive list of therapeutic optimization tasks that are detailed and act
 
 ## Citations and Referencing:
 At the end of the generated answer, always provide citations to accompany your claims. You can extract these from the "Title" in the retrieved context (guidelines). Provide the citations in this format: "Title"-StatsPearls. If there is no "Title," then just write "No citation." Use only citations provided in guidelines (retrieved context)!"""
-    risk_factor = classify_risk_factor(reply, query)
+    conversation_history = [{"role": "system", "content": "You are an AI expert in medical document retrieval and research."}]
     conversation_history.append({"role": "user", "content": prompt})
 
     try:
@@ -194,7 +182,9 @@ At the end of the generated answer, always provide citations to accompany your c
         )
         reply = chat_completion.choices[0].message.content
         conversation_history.append({"role": "assistant", "content": reply})
-        return {"response": reply, "confidence_score": avg_confidence,"risk_factor":risk_factor}
-    except Exception as e:
-        return f"Error generating response: {e}"
 
+        risk_factor=classify_risk_factor(reply,query)
+        return reply,risk_factor
+
+    except Exception as e:
+        return {"response": f"Error generating response: {e}"}
