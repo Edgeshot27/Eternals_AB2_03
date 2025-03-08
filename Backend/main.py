@@ -90,7 +90,7 @@ class PatientCreate(BaseModel):
     reports: str
     remarks: str
     latest_risk_factor:str
-    
+    score:float
 
 class Token(BaseModel):
     access_token: str
@@ -236,7 +236,7 @@ async def query_medical_patient_ai(question: str, patient_id: str):
             "personalHistory": patient["personalHistory"],
             "familyHistory": patient["familyHistory"],
             "remarks": patient["remarks"],
-            
+            "score":patient.get("score",0.0),
             "latest_risk_factor":patient["latest_risk_factor"]
         }
         past_questions = patient.get("therapeutic_optimisation_question", "").split(" || ")
@@ -245,16 +245,24 @@ async def query_medical_patient_ai(question: str, patient_id: str):
         response = generate_patient_ai_response(question, patient_info, therapeutic_optimisation_question)
 
         # Generate AI response
-        response,risk = generate_patient_ai_response(question, patient_info,therapeutic_optimisation_question)
+        result = generate_patient_ai_response(question, patient_info, therapeutic_optimisation_question)
+
+# Ensure it's unpackable
+        if isinstance(result, tuple) and len(result) == 3:
+            response, risk, cscore = result
+        else:
+            response = result
+            risk, cscore = None, None
         chat_entry = {
             "question": question,
             "response": response,
             "latest_risk_factor":risk,
+            "score":cscore,
             "timestamp": datetime.utcnow()
         }
         await patients_collection.update_one(
             {"_id": ObjectId(patient_id)},
-            {"$push": {"chat_history": chat_entry}, "$set": {"therapeutic_optimisation_question": therapeutic_optimisation_question,"latest_risk_factor":risk}}
+            {"$push": {"chat_history": chat_entry}, "$set": {"therapeutic_optimisation_question": therapeutic_optimisation_question,"latest_risk_factor":risk,"score":cscore}}
         )
         
         return {"query": question, "patient_info": patient_info, "response": response}
