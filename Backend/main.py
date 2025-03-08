@@ -261,9 +261,12 @@ async def query_medical_patient_ai(question: str, patient_id: str):
         else:
             response = result
             risk, cscore = None, None
-        
+        # print(risk)
+        # print(result)
         if risk and risk.lower() == "critical":
             send_risk_alert_email(patient_info)
+        # else:
+        #     print("no call")
         chat_entry = {
             "question": question,
             "response": response,
@@ -287,20 +290,20 @@ def send_risk_alert_email(patient:dict):
     Sends an email alert if the latest risk factor is 'critical'.
     """
     if patient.get("latest_risk_factor", "").lower() != "critical":
-        print(f"✅ {patient.name} is not in a critical condition. No email sent.")
-        return {"message": f"No alert needed for {patient.name}."}
+        print(f"✅ {patient.get('name', '')} is not in a critical condition. No email sent.")
+        return {"message": f"No alert needed for {patient.get('name', '')}."}
 
-    subject = f"🚨 Urgent Medical Risk Alert for {patient.name}"
+    subject = f"🚨 Urgent Medical Risk Alert for {patient.get('name', '')}"
 
     body = f"""
-    Dear {patient.name},
+    Dear {patient.get("name", "")},
 
     Our latest health analysis has flagged your condition as **CRITICAL**.
    
     📌 **Risk Assessment Summary:**
-    - **Risk Level:** {patient.latest_risk_factor}
-    - **Condition:** {patient.condition}
-    - **Symptoms:** {patient.symptoms}
+    - **Risk Level:** {patient.get('latest_risk_factor','')}
+    - **Condition:** {patient.get('condition','')}
+    - **Symptoms:** {patient.get('symptoms','')}
     - **Recommended Action:** Please seek immediate medical attention.
 
     Regards,
@@ -309,17 +312,12 @@ def send_risk_alert_email(patient:dict):
 
     try:
         yag = yagmail.SMTP(SENDER_EMAIL, SENDER_PASSWORD)
-        yag.send(to=patient.Email, subject=subject, contents=body)
-        print(f"📧 Alert email sent to {patient.Email}")
-        return {"message": f"Alert email sent to {patient.name} at {patient.Email}."}
+        yag.send(to=patient.get("Email",""), subject=subject, contents=body)
+        print(f"📧 Alert email sent to {patient.get('Email','')}")
+        return {"message": f"Alert email sent to {patient.get('name','')} at {patient.get('Email','')}."}
     except Exception as e:
         print(f"❌ Failed to send email: {str(e)}")
         return {"error": "Failed to send email", "details": str(e)}
-
-@app.post("/send-alert/")
-async def send_alert(patient: PatientCreate):
-    # patient.Email = "aditya.kudale22@pccoepune.org"  
-    return send_risk_alert_email(patient)
 
 
 # Run the application
