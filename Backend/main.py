@@ -43,6 +43,10 @@ SECRET_KEY = "your-secret-key"  # Replace with a secure secret key
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
+
+SENDER_EMAIL = "kotkarprasanna96@gmail.com"  # Replace with your Gmail
+SENDER_PASSWORD = "zoya pqwr tvgt wken"  # Use an App Password for security
+
 # OAuth2 scheme for token authentication
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
@@ -229,6 +233,7 @@ async def query_medical_patient_ai(question: str, patient_id: str):
         
         patient_info = {
             "name": patient["name"],
+            "Email":patient["Email"],
             "age": patient["age"],
             "gender": patient["gender"],
             "condition": patient["condition"],
@@ -252,9 +257,13 @@ async def query_medical_patient_ai(question: str, patient_id: str):
 # Ensure it's unpackable
         if isinstance(result, tuple) and len(result) == 3:
             response, risk, cscore = result
+            
         else:
             response = result
             risk, cscore = None, None
+        
+        if risk and risk.lower() == "critical":
+            send_risk_alert_email(patient_info)
         chat_entry = {
             "question": question,
             "response": response,
@@ -272,14 +281,12 @@ async def query_medical_patient_ai(question: str, patient_id: str):
         raise HTTPException(status_code=500, detail=str(e))
     
 
-SENDER_EMAIL = "kotkarprasanna96@gmail.com"  # Replace with your Gmail
-SENDER_PASSWORD = "zoya pqwr tvgt wken"  # Use an App Password for security
 
-def send_risk_alert_email(patient: PatientCreate):
+def send_risk_alert_email(patient:dict):
     """
     Sends an email alert if the latest risk factor is 'critical'.
     """
-    if patient.latest_risk_factor.lower() != "critical":
+    if patient.get("latest_risk_factor", "").lower() != "critical":
         print(f"✅ {patient.name} is not in a critical condition. No email sent.")
         return {"message": f"No alert needed for {patient.name}."}
 

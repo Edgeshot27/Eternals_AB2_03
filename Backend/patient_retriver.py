@@ -221,6 +221,7 @@ At the end of the generated answer, always provide citations to accompany your c
         conversation_history.append({"role": "assistant", "content": reply})
 
         risk_factor=classify_risk_factor(reply,query)
+        
         return reply,risk_factor,avg_confidence
 
     except Exception as e:
