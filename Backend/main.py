@@ -13,6 +13,7 @@ from patient_retriver import generate_patient_ai_response
 logging.basicConfig(level=logging.ERROR)
 from retrival import generate_ai_response
 
+import yagmail
 # Initialize FastAPI app
 app = FastAPI()
 
@@ -72,6 +73,7 @@ class Patient(BaseModel):
 class PatientCreate(BaseModel):
     id: int
     name: str
+    Email:EmailStr
     gender: str
     age: int
     dob: str
@@ -268,6 +270,50 @@ async def query_medical_patient_ai(question: str, patient_id: str):
         return {"query": question, "patient_info": patient_info, "response": response}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+    
+
+SENDER_EMAIL = "kotkarprasanna96@gmail.com"  # Replace with your Gmail
+SENDER_PASSWORD = "zoya pqwr tvgt wken"  # Use an App Password for security
+
+def send_risk_alert_email(patient: PatientCreate):
+    """
+    Sends an email alert if the latest risk factor is 'critical'.
+    """
+    if patient.latest_risk_factor.lower() != "critical":
+        print(f"✅ {patient.name} is not in a critical condition. No email sent.")
+        return {"message": f"No alert needed for {patient.name}."}
+
+    subject = f"🚨 Urgent Medical Risk Alert for {patient.name}"
+
+    body = f"""
+    Dear {patient.name},
+
+    Our latest health analysis has flagged your condition as **CRITICAL**.
+   
+    📌 **Risk Assessment Summary:**
+    - **Risk Level:** {patient.latest_risk_factor}
+    - **Condition:** {patient.condition}
+    - **Symptoms:** {patient.symptoms}
+    - **Recommended Action:** Please seek immediate medical attention.
+
+    Regards,
+    Your Healthcare Team
+    """
+
+    try:
+        yag = yagmail.SMTP(SENDER_EMAIL, SENDER_PASSWORD)
+        yag.send(to=patient.Email, subject=subject, contents=body)
+        print(f"📧 Alert email sent to {patient.Email}")
+        return {"message": f"Alert email sent to {patient.name} at {patient.Email}."}
+    except Exception as e:
+        print(f"❌ Failed to send email: {str(e)}")
+        return {"error": "Failed to send email", "details": str(e)}
+
+@app.post("/send-alert/")
+async def send_alert(patient: PatientCreate):
+    # patient.Email = "aditya.kudale22@pccoepune.org"  
+    return send_risk_alert_email(patient)
+
 
 # Run the application
 if __name__ == "__main__":
