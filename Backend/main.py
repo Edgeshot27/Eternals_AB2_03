@@ -9,6 +9,7 @@ from datetime import datetime, timedelta
 from jose import JWTError, jwt
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 import logging
+from patient_retriver import generate_patient_ai_response
 logging.basicConfig(level=logging.ERROR)
 from retrival import generate_ai_response
 
@@ -212,6 +213,51 @@ def query_medical_ai(question: str):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+
+@app.get("/query_patient/")
+async def query_medical_patient_ai(question: str, patient_id: str):
+    try:
+        # Retrieve patient details from MongoDB
+        patient = await patients_collection.find_one({"_id": ObjectId(patient_id)})
+        if not patient:
+            raise HTTPException(status_code=404, detail="Patient not found")
+
+        
+        patient_info = {
+            "name": patient["name"],
+            "age": patient["age"],
+            "gender": patient["gender"],
+            "condition": patient["condition"],
+            "symptoms": patient["symptoms"],
+            "medications": patient["medications"],
+            "allergies": patient["allergies"],
+            "personalHistory": patient["personalHistory"],
+            "familyHistory": patient["familyHistory"],
+            "remarks": patient["remarks"]
+        }
+        past_questions = patient.get("therapeutic_optimisation_question", "").split(" || ")
+        past_questions = past_questions[-2:] if past_questions else []
+        therapeutic_optimisation_question = " || ".join(past_questions + [question])
+        response = generate_patient_ai_response(question, patient_info, therapeutic_optimisation_question)
+
+        # Generate AI response
+        response,score,risk_factor = generate_patient_ai_response(question, patient_info,therapeutic_optimisation_question)
+        chat_entry = {
+            "question": question,
+            "response": response,
+            "risk_factor": risk_factor,  
+            "confidence_score": score,
+            "timestamp": datetime.utcnow()
+        }
+        await patients_collection.update_one(
+            {"_id": ObjectId(patient_id)},
+            {"$push": {"chat_history": chat_entry}, "$set": {"therapeutic_optimisation_question": therapeutic_optimisation_question, 
+              "latest_risk_factor": risk_factor}}
+        )
+        
+        return {"query": question, "patient_info": patient_info, "response": response,"score":score}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 # Run the application
 if __name__ == "__main__":

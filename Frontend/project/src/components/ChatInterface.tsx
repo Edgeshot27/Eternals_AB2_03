@@ -41,7 +41,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ token, patient }) => {
     setIsLoading(true);
 
     try {
-      const response = await fetch(`http://localhost:8000/query/?question=${encodeURIComponent(input)}`, {
+      const response = await fetch(`http://localhost:8000/query_patient/?question=${encodeURIComponent(input)}&patient_id=${patient.id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       
