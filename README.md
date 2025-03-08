@@ -62,4 +62,6 @@ ROUND 2 WORK:
 
 ![image](https://github.com/user-attachments/assets/28b8e4c1-8e42-4787-8d38-5ef73f492fda)
 
+All the above mentioned functionalities have been implemented.
+
 
