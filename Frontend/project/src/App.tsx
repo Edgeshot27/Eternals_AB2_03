@@ -1,41 +1,57 @@
-import React, { useState } from 'react';
-import { Stethoscope } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import Home from './components/Home';
 import Login from './components/Login';
 import Register from './components/Register';
-import Dashboard from './components/Dashboard';
+import Dash from './components/Dash';
+import GoogleCallback from './components/GoogleCallback';
+import Patient from './components/Patient';
+import Chat from './components/Chat'; // Import the Chat component
 
-function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [token, setToken] = useState('');
-  const [currentView, setCurrentView] = useState('login');
-  const [userData, setUserData] = useState(null);
+interface UserData {
+  id: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+  phone_number?: string;
+}
 
-  const handleLogin = (token: string) => {
-    setToken(token);
-    setIsAuthenticated(true);
-    fetchUserData(token);
-  };
+const App: React.FC = () => {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userData, setUserData] = useState<UserData | null>(null);
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    return localStorage.getItem('darkMode') === 'true';
+  });
 
-  const handleLogout = () => {
-    setToken('');
-    setIsAuthenticated(false);
-    setUserData(null);
-    setCurrentView('login');
-  };
+  useEffect(() => {
+    // Check for existing token and fetch user data on mount
+    const token = localStorage.getItem('token');
+    if (token) {
+      setIsLoggedIn(true);
+      fetchUserData(token);
+    }
+  }, []);
+
+  useEffect(() => {
+    document.documentElement.classList.toggle('dark', isDarkMode);
+    localStorage.setItem('darkMode', isDarkMode.toString());
+  }, [isDarkMode]);
 
   const fetchUserData = async (token: string) => {
     try {
       const response = await fetch('http://localhost:8000/user', {
         headers: {
-          'Authorization': `Bearer ${token}`
-        }
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include' // Add this if your backend uses cookies
       });
-      
+
       if (response.ok) {
         const data = await response.json();
         setUserData(data);
-      } else {
-        console.error('Failed to fetch user data');
+      } else if (response.status === 401) {
+        // Token expired or invalid
         handleLogout();
       }
     } catch (error) {
@@ -44,54 +60,86 @@ function App() {
     }
   };
 
-  const toggleView = () => {
-    setCurrentView(currentView === 'login' ? 'register' : 'login');
+  const handleLogin = async (token: string) => {
+    localStorage.setItem('token', token);
+    setIsLoggedIn(true);
+    await fetchUserData(token);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    setIsLoggedIn(false);
+    setUserData(null);
+  };
+
+  const toggleDarkMode = () => {
+    setIsDarkMode(prev => {
+      const newValue = !prev;
+      localStorage.setItem('darkMode', String(newValue));
+      return newValue;
+    });
   };
 
   return (
-    <div className="min-h-screen bg-gray-100">
-      {!isAuthenticated ? (
-        <div className="flex flex-col items-center justify-center min-h-screen p-4">
-          <div className="w-full max-w-md">
-            <div className="flex items-center justify-center mb-8">
-              <Stethoscope className="h-10 w-10 text-blue-600 mr-2" />
-              <h1 className="text-3xl font-bold text-blue-600">AIsculapius</h1>
-            </div>
-            
-            {currentView === 'login' ? (
-              <>
-                <Login onLogin={handleLogin} />
-                <p className="text-center mt-4 text-gray-600">
-                  Don't have an account?{' '}
-                  <button 
-                    onClick={toggleView}
-                    className="text-blue-600 hover:underline"
-                  >
-                    Sign up
-                  </button>
-                </p>
-              </>
+    <Router>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route
+          path="/login"
+          element={!isLoggedIn ? <Login onLogin={handleLogin} /> : <Navigate to="/dashboard" />}
+        />
+        <Route
+          path="/register"
+          element={!isLoggedIn ? <Register onRegisterSuccess={() => <Navigate to="/login" />} /> : <Navigate to="/dashboard" />}
+        />
+        <Route
+          path="/dashboard"
+          element={
+            isLoggedIn ? (
+              <Dash
+                token={localStorage.getItem('token') || ''}
+                userData={userData}
+                onLogout={handleLogout}
+                isDarkMode={isDarkMode}
+                toggleDarkMode={toggleDarkMode}
+              />
             ) : (
-              <>
-                <Register onRegisterSuccess={() => setCurrentView('login')} />
-                <p className="text-center mt-4 text-gray-600">
-                  Already have an account?{' '}
-                  <button 
-                    onClick={toggleView}
-                    className="text-blue-600 hover:underline"
-                  >
-                    Log in
-                  </button>
-                </p>
-              </>
-            )}
-          </div>
-        </div>
-      ) : (
-        <Dashboard token={token} userData={userData} onLogout={handleLogout} />
-      )}
-    </div>
+              <Navigate to="/login" />
+            )
+          }
+        />
+        <Route
+          path="/auth/google/callback"
+          element={<GoogleCallback onLogin={handleLogin} />}
+        />
+        <Route
+          path="/patient/:id"
+          element={
+            isLoggedIn ? (
+              <Patient
+                isDarkMode={isDarkMode}
+                toggleDarkMode={toggleDarkMode}
+              />
+            ) : (
+              <Navigate to="/login" />
+            )
+          }
+        />
+        <Route
+          path="/chat"
+          element={
+            isLoggedIn ? (
+              <Chat isDarkMode={isDarkMode} />
+            ) : (
+              <Navigate to="/login" />
+            )
+          }
+        />
+        <Route path="*" element={<Navigate to="/" />} />
+      </Routes>
+    </Router>
   );
-}
+};
 
 export default App;
+
