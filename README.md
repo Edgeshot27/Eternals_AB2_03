@@ -29,9 +29,9 @@ Our solution provides a robust clinical decion support system via TWO DIFFERENT 
 ![image](https://github.com/user-attachments/assets/bf17c7a5-eb40-4af8-83f8-cebf5606c124) 
 
 ## Current Vector DB Status: 
-**medical_docs Collection**: approx 30,000 Data Points : Retrieved from 8 different Sources 1,26,000 Book Records , 3000 Research Papers, Guidelines from PubMed,Arxiv,WHO etc.
+- **medical_docs Collection**: approx 30,000 Data Points : Retrieved from 8 different Sources 1,26,000 Book Records , 3000 Research Papers, Guidelines from PubMed,Arxiv,WHO etc.
 
-**clinic abstract Collection**: approx 52000 points : Retrieved from different healthcare organizations.
+- **clinic abstract Collection**: approx 52000 points : Retrieved from different healthcare organizations.
 
 
 ![Screenshot 2025-03-08 220949](https://github.com/user-attachments/assets/9945b181-afcf-4d14-961a-6f0c2ccc1785)
@@ -92,11 +92,14 @@ Preferrably use the final-submission branch :
 clone the project 
 
 RUN FRONTEND-
+```
 cd frontend 
 npm install
 npm run dev
-
+```
 RUN BACKEND-
+```
 cd backend
 pip install -r requirements.txt
 uvicorn main:app --reload
+```
