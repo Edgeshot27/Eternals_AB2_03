@@ -6,7 +6,7 @@ from transformers import AutoTokenizer, AutoModel
 from rank_bm25 import BM25Okapi
 import qdrant_client
 from groq import Groq
-import numpy as np
+
 logging.basicConfig(level=logging.INFO)
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -79,66 +79,41 @@ def reciprocal_rank_fusion(dense_results, bm25_results, k=60):
 def retrieve_hybrid(query, top_k=5):
     dense_results = retrieve_dense(query, top_k=top_k)
     bm25_results = retrieve_bm25(query, top_k=top_k)
-
     hybrid_results = reciprocal_rank_fusion(dense_results, bm25_results) if bm25_results else dense_results
-
-    final_results = []
-    for title, fused_score in hybrid_results:
-        qdrant_score = next((d["score"] for d in dense_results if d["title"] == title), 0)
-        bm25_score = next((d["score"] for d in bm25_results if d["title"] == title), 0)
-
-        confidence = compute_confidence_score(qdrant_score, bm25_score)
-
-        final_results.append({"title": title, "score": confidence})
-
-    return sorted(final_results, key=lambda x: x["score"], reverse=True)
+    return [{"title": title, "score": score} for title, score in hybrid_results]
 
 groq_client = Groq(api_key=os.getenv("GROQ_API_KEY"))  # Secure API key handling
+
 def get_qdrant_min_max():
     all_scores = []
     scroll_result = client.scroll(collection_name=collection_name, scroll_filter=None, limit=1000)
-
     for point in scroll_result[0]:  # Extract documents from tuple response
-        if isinstance(point, dict) and "score" in point:
+        if "score" in point:  
             all_scores.append(point["score"])
-
-    if not all_scores:
-        return 0, 1  # Default values if no scores exist
     
-    return min(all_scores), max(all_scores)
+    return (min(all_scores), max(all_scores)) if all_scores else (0, 1)
 
 min_qdrant, max_qdrant = get_qdrant_min_max()
 
 def get_bm25_min_max():
-    if not bm25:
-        return 0, 1  # Default values if BM25 is disabled
-
     all_scores = []
     for doc in documents:
         tokens = doc.split()
         scores = bm25.get_scores(tokens)
         all_scores.extend(scores)
-
-    if not all_scores:
-        return 0, 1  # Default values if no scores exist
-
-    return min(all_scores), max(all_scores)
+    
+    return (min(all_scores), max(all_scores)) if all_scores else (0, 1)
 
 min_bm25, max_bm25 = get_bm25_min_max()
 
 def compute_confidence_score(qdrant_score, bm25_score, alpha=0.7):
-    qdrant_range = max_qdrant - min_qdrant or 1  # Avoid division by zero
-    bm25_range = max_bm25 - min_bm25 or 1  # Avoid division by zero
+    qdrant_range = max_qdrant - min_qdrant or 1
+    bm25_range = max_bm25 - min_bm25 or 1
 
     qdrant_norm = (qdrant_score - min_qdrant) / qdrant_range
     bm25_norm = (bm25_score - min_bm25) / bm25_range
 
-    qdrant_scaled = np.log1p(qdrant_norm)
-    bm25_scaled = np.log1p(bm25_norm)
-
-    final_score = alpha * qdrant_scaled + (1 - alpha) * bm25_scaled
-
-    return round(final_score, 3)
+    return alpha * qdrant_norm + (1 - alpha) * bm25_norm
 
 def classify_risk_factor(response_text, query):
     critical_keywords = ["life-threatening", "severe", "urgent", "emergency", "high risk", "ICU", "hospitalization"]
@@ -160,27 +135,15 @@ def generate_patient_ai_response(query, patient_recent_profile, therapeutic_opti
     if not retrieved_docs:
         return {"response": "No relevant documents found."}
 
-    enhanced_results = []
-    for doc in retrieved_docs:
-        qdrant_score = doc.get("qdrant_score", 0)  # Fetch Qdrant score if available
-        bm25_score = doc.get("bm25_score", 0)  # Fetch BM25 score if available
-        new_confidence = compute_confidence_score(qdrant_score, bm25_score)  # Custom scoring function
-        enhanced_results.append({**doc, "new_confidence": new_confidence})  
+    retrieved_texts = "\n\n".join([f"Title: {doc['title']}\nAbstract: {doc.get('abstract', 'No abstract')}" for doc in retrieved_docs])
+    confidence_scores = [doc["score"] for doc in retrieved_docs]
+    avg_confidence = sum(confidence_scores) / len(confidence_scores) if confidence_scores else 0
 
-    # Sort documents by the new confidence score
-    sorted_results = sorted(enhanced_results, key=lambda x: x["new_confidence"], reverse=True)
-
-    retrieved_texts = "\n\n".join([
-        f"Title: {doc['title']}\nAbstract: {doc.get('abstract', 'No abstract')}" 
-        for doc in sorted_results
-    ])
-    
-    avg_confidence = sum(doc["new_confidence"] for doc in sorted_results) / len(sorted_results) if sorted_results else 0
     prompt = f"""
 ## Role: World-Class Primary Care Physician
 
 ## Task: Generate Therapeutic Optimization Tasks for a PCP to review based on the patient's profile, therapeutic optimisation questions, and current best practice guidelines.
-
+Generate Everything in point wise manner as heading and subheading format
 ## Guidelines:
 **Data Inputs:**
 - **Patient's Current Clinical Profile:** Utilize the detailed information from the patient's most recent clinical profile over the last 12 weeks, which includes diagnoses, medications, and any abnormal labs. This data is provided under the variable {{patient_recent_profile}}.
@@ -221,8 +184,7 @@ At the end of the generated answer, always provide citations to accompany your c
         conversation_history.append({"role": "assistant", "content": reply})
 
         risk_factor=classify_risk_factor(reply,query)
-        
-        return reply,risk_factor,avg_confidence
+        return reply,risk_factor
 
     except Exception as e:
         return {"response": f"Error generating response: {e}"}
